@@ -1,0 +1,30 @@
+# Python
+*.pyc
+*.pyo
+__pycache__/
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.uv/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# LiveKit server files (don't push these!)
+livekit-server.exe
+livekit_*.zip
+livekit_server_extracted/
+
+# Orders directory (optional - depends if you want to track orders)
+backend/orders/
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
