@@ -1,0 +1,20 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "agent-starter-python"
+version = "1.0.0"
+requires-python = ">=3.9"
+
+dependencies = [
+    "livekit-agents>=1.2.0",          # UPGRADE
+    "livekit-plugins-openai>=0.9.0",  # UPGRADE
+    "livekit-plugins-deepgram>=0.9.0",# UPGRADE
+    "livekit-plugins-silero>=0.9.0",  # UPGRADE
+    "livekit-murf>=0.1.0",            # THE NEW MURF PACKAGE
+    "python-dotenv",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/agent.py"]
