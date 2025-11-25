@@ -1,397 +1,359 @@
 #!/usr/bin/env python3
 """
-Coffee Shop Barista Agent - LiveKit Agents v1.3.x
-Uses Agent and AgentSession (new API)
+Day 4 - Teach-the-Tutor: Active Recall Coach
+Multi-agent system with Learn, Quiz, and Teach Back modes
+LiveKit Agents 1.3.3 - TRUE FINAL WORKING VERSION
 """
-
 
 import logging
 import json
 import os
 import sys
-import asyncio
-from datetime import datetime
-from typing import Annotated, Optional
-from dataclasses import dataclass, field
-
-
+from typing import Annotated
 from dotenv import load_dotenv
 
-
-# LiveKit core (v1.3.x uses different imports)
+# LiveKit core
+from livekit import rtc
 from livekit.agents import (
     Agent,
     AgentSession,
     JobContext,
-    JobProcess,
     WorkerOptions,
     cli,
     function_tool,
     RunContext,
 )
-
-
-# Cloud plugins
-from livekit.plugins import openai, deepgram, cartesia
-
-
-# Try to import silero for VAD (optional)
-try:
-    from livekit.plugins import silero
-except Exception:
-    silero = None
-    print("⚠️ Silero VAD not available (optional)")
-
+from livekit.plugins import openai, deepgram, cartesia, silero
 
 # Setup logging
-logger = logging.getLogger("coffee-barista")
+logger = logging.getLogger("teach-tutor-agent")
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(name)s - %(message)s"
 )
 
-
 # Load environment variables
 load_dotenv(dotenv_path=".env.local")
 
-
 # Setup directories
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-ORDERS_DIR = os.path.join(ROOT, "orders")
-os.makedirs(ORDERS_DIR, exist_ok=True)
+DATA_DIR = os.path.join(ROOT, "shared-data")
+os.makedirs(DATA_DIR, exist_ok=True)
 
+# Content file
+CONTENT_FILE = os.path.join(DATA_DIR, "day4_tutor_content.json")
 
-print("\n" + "☕" * 10)
-print("🚀 MG'S CAFE - COFFEE SHOP AGENT v1.3")
-print(f"📁 Orders will be saved to: {ORDERS_DIR}")
-print("☕" * 10 + "\n")
-
-
-
-# ---------------------------
-# Order Management
-# ---------------------------
-@dataclass
-class OrderState:
-    drinkType: Optional[str] = None
-    size: Optional[str] = None
-    milk: Optional[str] = None
-    extras: list[str] = field(default_factory=list)
-    name: Optional[str] = None
-
-
-    def to_dict(self) -> dict:
-        return {
-            "drinkType": self.drinkType,
-            "size": self.size,
-            "milk": self.milk,
-            "extras": self.extras,
-            "name": self.name
-        }
-
-
-    def get_summary(self) -> str:
-        extras_text = f" with {', '.join(self.extras)}" if self.extras else ""
-        return f"{self.size} {self.drinkType} with {self.milk} milk{extras_text} for {self.name}"
-
-
-
-def save_order_to_json(order: OrderState) -> str:
-    """Save order to JSON file and return the file path"""
-    safe_name = "".join(
-        c for c in (order.name or "guest") 
-        if c.isalnum() or c in (" ", "_")
-    ).strip().replace(" ", "_")
-    
-    timestamp = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
-    filename = f"{safe_name}_{timestamp}.json"
-    fullpath = os.path.join(ORDERS_DIR, filename)
-
-
-    payload = order.to_dict()
-    payload["timestamp"] = datetime.utcnow().isoformat()
-    payload["order_number"] = timestamp
-
-
-    with open(fullpath, "w", encoding="utf-8") as f:
-        json.dump(payload, f, ensure_ascii=False, indent=2)
-
-
-    logger.info("✅ ORDER SAVED: %s", fullpath)
-    print(f"\n{'='*60}")
-    print(f"✅ ORDER SAVED SUCCESSFULLY!")
-    print(f"{'='*60}")
-    print(f"📄 File: {filename}")
-    print(f"📦 Order: {order.get_summary()}")
-    print(f"{'='*60}\n")
-    
-    return fullpath
-
+print("\n" + "🎓" * 15)
+print("📚 TEACH-THE-TUTOR: ACTIVE RECALL COACH - DAY 4")
+print(f"📁 Content file: {CONTENT_FILE}")
+print("🎓" * 15 + "\n")
 
 
 # ---------------------------
-# Function Tools (using @function_tool decorator for v1.3.x)
+# Content Data Manager
 # ---------------------------
+class ContentLoader:
+    """Manages loading and accessing tutor content"""
+
+    def __init__(self, content_path: str = CONTENT_FILE):
+        self.content_path = content_path
+        self.concepts = []
+        self._ensure_content_exists()
+        self.load_content()
+
+    def _ensure_content_exists(self):
+        """Create default content file if it doesn't exist"""
+        if not os.path.exists(self.content_path):
+            default_content = [
+                {
+                    "id": "variables",
+                    "title": "Variables",
+                    "summary": "Variables are containers that store values in programming. They allow you to save data like numbers, text, or complex objects, and reuse them throughout your code. Think of a variable as a labeled box where you can put information and retrieve it later by using its name.",
+                    "sample_question": "What is a variable and why is it useful in programming?"
+                },
+                {
+                    "id": "loops",
+                    "title": "Loops",
+                    "summary": "Loops are programming constructs that let you repeat actions multiple times without writing the same code over and over. A for loop is used when you know how many times you want to repeat something, like counting from 1 to 10. A while loop continues repeating as long as a certain condition remains true, useful when you don't know exactly how many iterations you need.",
+                    "sample_question": "Explain the difference between a for loop and a while loop."
+                },
+                {
+                    "id": "functions",
+                    "title": "Functions",
+                    "summary": "Functions are reusable blocks of code that perform specific tasks. They help organize your code, make it more readable, and avoid repetition. Functions can accept inputs called parameters and return outputs. This makes your code modular and easier to maintain.",
+                    "sample_question": "What is a function and what are its main benefits?"
+                }
+            ]
+            with open(self.content_path, 'w') as f:
+                json.dump(default_content, f, indent=2)
+            logger.info(f"✅ Created default content file at {self.content_path}")
+
+    def load_content(self):
+        """Load concepts from JSON file"""
+        try:
+            with open(self.content_path, 'r') as f:
+                self.concepts = json.load(f)
+            logger.info(f"✅ Loaded {len(self.concepts)} concepts from content file")
+        except Exception as e:
+            logger.error(f"❌ Failed to load content: {e}")
+            self.concepts = []
+
+    def get_all_concepts(self):
+        """Return all concepts"""
+        return self.concepts
+
+    def get_concept(self, concept_id: str):
+        """Get a specific concept by ID"""
+        for concept in self.concepts:
+            if concept['id'] == concept_id:
+                return concept
+        return None
+
+    def get_concept_titles(self):
+        """Get formatted list of all concept titles"""
+        return ", ".join([c['title'] for c in self.concepts])
+
+    def get_concept_ids(self):
+        """Get list of concept IDs"""
+        return [c['id'] for c in self.concepts]
 
 
-@function_tool
-async def complete_order(
+# Global content loader
+content_loader = ContentLoader()
+
+# Current mode tracker
+current_mode = {"mode": "greeter"}
+
+
+# ---------------------------
+# Instructions for Each Mode
+# ---------------------------
+def get_instructions_for_mode(mode: str) -> str:
+    """Get system instructions based on current mode"""
+
+    available_concepts = content_loader.get_concept_titles()
+
+    if mode == "learn":
+        return f"""You are Matthew, an expert teacher in Learn mode.
+Your role is to explain programming concepts clearly and thoroughly.
+
+Available topics: {available_concepts}
+
+Your approach:
+- When the user asks about a concept, use get_concept_info() to retrieve the material
+- Explain concepts using clear language and real-world analogies
+- Break down complex ideas into digestible parts
+- Use examples to illustrate key points
+- Check for understanding before moving on
+- Keep explanations concise (2-3 minutes per concept)
+
+The user can switch modes anytime by asking.
+
+Remember: You're teaching, so be clear, thorough, and supportive."""
+
+    elif mode == "quiz":
+        return f"""You are Alicia, an encouraging quiz master in Quiz mode.
+Your role is to test the user's understanding with thoughtful questions.
+
+Available topics: {available_concepts}
+
+Your approach:
+- When ready to quiz, use get_quiz_question() to get the reference question
+- Ask clear, focused questions in an engaging way
+- Listen carefully to their answers
+- Provide constructive, specific feedback
+- Praise correct answers enthusiastically
+- For incorrect answers, gently explain the right concept
+- Ask follow-up questions to deepen understanding
+
+The user can switch modes anytime by asking.
+
+Remember: You're testing knowledge, but stay encouraging and supportive!"""
+
+    elif mode == "teachback":
+        return f"""You are Ken, a patient and thoughtful listener in Teach Back mode.
+Your role is to listen to the user explain concepts and provide helpful feedback.
+
+Available topics: {available_concepts}
+
+Your approach:
+- Prompt the user to explain a concept in their own words
+- Listen actively and attentively to their full explanation
+- After they finish, use get_reference_material() to retrieve the correct information
+- Provide specific, constructive feedback on accuracy, clarity, completeness
+- Always start with what they did well
+- Gently point out any gaps or misconceptions
+- Encourage them to elaborate on unclear points
+
+The user can switch modes anytime by asking.
+
+Remember: Your goal is to help them learn by teaching!"""
+
+    else:  # greeter
+        return f"""You are a friendly learning assistant that helps users choose their learning mode.
+
+Available learning modes:
+- LEARN: You explain concepts to them (call switch_to_learn_mode)
+- QUIZ: You test their knowledge (call switch_to_quiz_mode)
+- TEACH_BACK: They explain concepts to you (call switch_to_teachback_mode)
+
+Available topics: {available_concepts}
+
+Your role:
+1. Greet the user warmly and explain the three modes briefly
+2. Ask which mode they'd like to start with
+3. Once they choose, use the appropriate switch function
+
+Keep your greeting brief and engaging. Let them know they can switch modes anytime."""
+
+
+# ---------------------------
+# Define Tools Outside of Agent Class
+# ---------------------------
+@function_tool()
+async def get_concept_info(
     context: RunContext,
-    drinkType: Annotated[str, "Type of drink (e.g., latte, cappuccino, espresso)"],
-    size: Annotated[str, "Size: small, medium, or large"],
-    milk: Annotated[str, "Type of milk: whole, skim, oat, almond, soy, or none"],
-    name: Annotated[str, "Customer's name for the order"],
-    extras: Annotated[str, "Comma-separated extras or empty string if none"] = "",
+    concept_id: Annotated[str, "The ID of the concept. Options: variables, loops, functions"]
 ):
-    """Complete and save the customer's coffee order"""
-    logger.info("🎉 complete_order called!")
-    logger.info("   Drink: %s", drinkType)
-    logger.info("   Size: %s", size)
-    logger.info("   Milk: %s", milk)
-    logger.info("   Name: %s", name)
-    logger.info("   Extras: %s", extras or "none")
-    
-    # Parse extras
-    extras_list = []
-    if extras and extras.strip():
-        extras_list = [e.strip() for e in extras.split(",") if e.strip()]
+    """Retrieve information about a specific programming concept for teaching"""
+    concept = content_loader.get_concept(concept_id)
+    if concept:
+        logger.info(f"📖 Retrieved concept: {concept['title']}")
+        return f"Concept: {concept['title']}\n\nReference: {concept['summary']}\n\nUse this as a foundation but explain in your own engaging way with examples."
+    return "Concept not found. Available concepts: " + content_loader.get_concept_titles()
 
 
-    # Create order
-    order = OrderState(
-        drinkType=drinkType,
-        size=size,
-        milk=milk,
-        extras=extras_list,
-        name=name,
-    )
-    
-    try:
-        filepath = save_order_to_json(order)
-        order_number = os.path.basename(filepath).split("_")[-1].replace(".json", "")
-        summary = order.get_summary()
-        
-        result_message = (
-            f"Perfect! I've completed your order: {summary}. "
-            f"Your order number is {order_number}. "
-            f"It'll be ready in just a few minutes! "
-            f"Thank you for choosing MG'S cafe!"
-        )
-        
-        logger.info("✅ Order completed successfully")
-        return result_message
-        
-    except Exception as e:
-        logger.error("❌ Failed to save order: %s", e, exc_info=True)
-        return "I apologize, there was an error saving your order. Could you please repeat your order?"
-
-
-
-@function_tool
-async def get_order_status(
+@function_tool()
+async def get_quiz_question(
     context: RunContext,
-    name: Annotated[Optional[str], "Customer name to look up"] = None
+    concept_id: Annotated[str, "The ID of the concept to quiz on. Options: variables, loops, functions"]
 ):
-    """Check order status for a customer"""
-    logger.info("📋 Checking order status for: %s", name or "latest")
-    
-    try:
-        files = sorted(
-            [f for f in os.listdir(ORDERS_DIR) if f.endswith(".json")],
-            reverse=True
-        )
-        
-        if not files:
-            return "No orders have been placed yet."
-        
-        if name:
-            # Search for orders matching the name
-            for filename in files:
-                try:
-                    with open(os.path.join(ORDERS_DIR, filename), "r") as f:
-                        data = json.load(f)
-                    if data.get("name", "").lower() == name.lower():
-                        return (
-                            f"Found order for {name}: "
-                            f"{data.get('size')} {data.get('drinkType')} "
-                            f"with {data.get('milk')} milk"
-                        )
-                except Exception:
-                    continue
-            return f"No orders found for {name}."
-        
-        # Return latest order
-        latest_file = files[0]
-        with open(os.path.join(ORDERS_DIR, latest_file), "r") as f:
-            data = json.load(f)
-        
-        return (
-            f"Most recent order: {data.get('size')} {data.get('drinkType')} "
-            f"for {data.get('name')}"
-        )
-        
-    except Exception as e:
-        logger.exception("get_order_status failed: %s", e)
-        return "Unable to check order status at the moment."
+    """Get a quiz question for a specific concept"""
+    concept = content_loader.get_concept(concept_id)
+    if concept:
+        logger.info(f"❓ Quiz question for: {concept['title']}")
+        return f"Concept: {concept['title']}\n\nSample Question: {concept['sample_question']}\n\nReference Answer: {concept['summary']}\n\nAsk the question engagingly, then evaluate their answer against the reference."
+    return "Concept not found. Available concepts: " + content_loader.get_concept_titles()
 
 
+@function_tool()
+async def get_reference_material(
+    context: RunContext,
+    concept_id: Annotated[str, "The ID of the concept being explained. Options: variables, loops, functions"]
+):
+    """Get reference material to evaluate user's explanation"""
+    concept = content_loader.get_concept(concept_id)
+    if concept:
+        logger.info(f"📋 Retrieved reference for: {concept['title']}")
+        return f"Concept: {concept['title']}\n\nReference: {concept['summary']}\n\nCompare the user's explanation to this. Highlight what they got right, what they missed, and how clear their explanation was."
+    return "Concept not found. Available concepts: " + content_loader.get_concept_titles()
 
-# ---------------------------
-# Prewarm Function
-# ---------------------------
-def prewarm(proc: JobProcess):
-    """Prewarm VAD if available"""
-    print("🔥 Prewarming...")
-    
-    if silero is None:
-        print("⚠️ Silero VAD not available (using fallback)")
-        proc.userdata["vad"] = None
-        return
-    
-    try:
-        if hasattr(silero, "VAD") and hasattr(silero.VAD, "load"):
-            proc.userdata["vad"] = silero.VAD.load()
-            print("✅ Silero VAD loaded successfully")
-        else:
-            proc.userdata["vad"] = None
-            print("⚠️ VAD not available")
-    except Exception as e:
-        print(f"⚠️ VAD prewarm failed: {e}")
-        proc.userdata["vad"] = None
 
+@function_tool()
+async def switch_to_learn_mode(context: RunContext):
+    """Switch to Learn mode where the agent explains concepts"""
+    logger.info("🔄 Switching to Learn mode")
+    current_mode["mode"] = "learn"
+    return "Switched to Learn mode! I'll explain programming concepts to you. Which topic would you like to learn about: Variables, Loops, or Functions?"
+
+
+@function_tool()
+async def switch_to_quiz_mode(context: RunContext):
+    """Switch to Quiz mode where the agent tests your knowledge"""
+    logger.info("🔄 Switching to Quiz mode")
+    current_mode["mode"] = "quiz"
+    return "Switched to Quiz mode! I'll test your knowledge. Which topic would you like to be quizzed on: Variables, Loops, or Functions?"
+
+
+@function_tool()
+async def switch_to_teachback_mode(context: RunContext):
+    """Switch to Teach Back mode where you explain concepts"""
+    logger.info("🔄 Switching to Teach Back mode")
+    current_mode["mode"] = "teachback"
+    return "Switched to Teach Back mode! Now you'll teach me. Which concept would you like to explain: Variables, Loops, or Functions?"
+
+
+@function_tool()
+async def return_to_menu(context: RunContext):
+    """Return to the main menu"""
+    logger.info("🔄 Returning to main menu")
+    current_mode["mode"] = "greeter"
+    return "Returning to main menu. Which learning mode would you like to try: Learn, Quiz, or Teach Back?"
 
 
 # ---------------------------
 # Main Entrypoint
 # ---------------------------
 async def entrypoint(ctx: JobContext):
-    """Main entry point for the voice assistant"""
+    """Main entry point for the teach-tutor agent"""
     logger.info("=" * 60)
-    logger.info("🚀 NEW SESSION STARTED")
+    logger.info("🎓 NEW TEACH-TUTOR SESSION STARTED")
     logger.info("Room: %s", ctx.room.name)
     logger.info("=" * 60)
-    
-    # Connect to room
-    await ctx.connect()
 
+    # Initialize with greeter mode
+    current_mode["mode"] = "greeter"
+    initial_instructions = get_instructions_for_mode("greeter")
 
-    # Initialize plugins
-    logger.info("🔌 Initializing plugins...")
-    
-    try:
-        # STT: Deepgram
-        stt_plugin = deepgram.STT(model="nova-2")
-        logger.info("✅ Deepgram STT initialized")
-        
-        # LLM: OpenAI
-        llm_plugin = openai.LLM(model="gpt-4o-mini")
-        logger.info("✅ OpenAI LLM initialized (gpt-4o-mini)")
-        
-        # TTS: Cartesia
-        tts_plugin = cartesia.TTS()
-        logger.info("✅ Cartesia TTS initialized")
-        
-        # VAD: Silero (from prewarm)
-        vad_plugin = ctx.proc.userdata.get("vad")
-        if vad_plugin:
-            logger.info("✅ Using prewarmed Silero VAD")
-        else:
-            logger.info("⚠️ No VAD available (will use fallback)")
-        
-    except Exception as e:
-        logger.error("❌ Plugin initialization failed: %s", e, exc_info=True)
-        logger.error("Please check your API keys in .env.local:")
-        logger.error("  - OPENAI_API_KEY")
-        logger.error("  - DEEPGRAM_API_KEY")
-        logger.error("  - CARTESIA_API_KEY")
-        return
-
-
-    # System instructions for the barista agent
-    instructions = """You are a friendly and efficient café barista at 'MG'S cafe'.
-
-
-Your job is to take coffee orders by collecting:
-1. Drink type (latte, cappuccino, espresso, americano, etc.)
-2. Size (small, medium, or large)
-3. Milk preference (whole, skim, oat, almond, soy, or none)
-4. Extras - OPTIONAL (whipped cream, vanilla syrup, caramel, etc.)
-5. Customer's name
-
-
-IMPORTANT RULES:
-- Ask ONE question at a time
-- Be warm, friendly, and conversational
-- Keep responses brief and natural
-- When you have ALL required fields (drink, size, milk, name), immediately call complete_order()
-- For extras, if customer says "no extras" or "nothing else", pass an empty string ""
-- Don't repeat information back excessively
-
-
-Start with a warm greeting and ask what they'd like to order."""
-
-
-    # Create the Agent with instructions and tools
-    agent = Agent(
-        instructions=instructions,
-        tools=[complete_order, get_order_status],
+    # Create agent with tools
+    assistant = Agent(
+        instructions=initial_instructions,
+        tools=[
+            get_concept_info,
+            get_quiz_question,
+            get_reference_material,
+            switch_to_learn_mode,
+            switch_to_quiz_mode,
+            switch_to_teachback_mode,
+            return_to_menu,
+        ]
     )
 
-
-    # Create the AgentSession with plugins
+    # Create the session with plugins
     session = AgentSession(
-        vad=vad_plugin,
-        stt=stt_plugin,
-        llm=llm_plugin,
-        tts=tts_plugin,
+        stt=deepgram.STT(model="nova-2"),
+        llm=openai.LLM(model="gpt-4o-mini"),
+        tts=cartesia.TTS(voice="79a125e8-cd45-4c13-8a67-188112f4dd22"),
     )
-
 
     # Start the session
-    logger.info("🎙️ Starting voice assistant session...")
-    await session.start(agent=agent, room=ctx.room)
-    
-    # Generate initial greeting
-    greeting = (
-        "Hi! Welcome to MG'S cafe! "
-        "I'm your virtual barista today. "
-        "What can I get started for you?"
+    await session.start(agent=assistant, room=ctx.room)
+
+    # Initial greeting
+    await session.generate_reply(
+        instructions=(
+            f"Greet the user warmly and introduce yourself. "
+            f"Explain that we have three learning modes available: "
+            f"Learn mode where you explain concepts, "
+            f"Quiz mode where you test their knowledge, "
+            f"and Teach Back mode where they explain concepts to you. "
+            f"We have {len(content_loader.get_all_concepts())} topics: {content_loader.get_concept_titles()}. "
+            f"Ask which mode they'd like to try first."
+        )
     )
-    
-    try:
-        await session.generate_reply(instructions=greeting)
-        logger.info("✅ Greeting generated successfully")
-    except Exception as e:
-        logger.error("❌ Failed to generate greeting: %s", e)
 
-
-    # The session will continue until participant disconnects
     logger.info("✅ Session active - agent is listening...")
-
 
 
 # ---------------------------
 # CLI Entry Point
 # ---------------------------
 if __name__ == "__main__":
-    logger.info("🚀 Starting Coffee Shop Agent...")
-    logger.info("Orders directory: %s", ORDERS_DIR)
-    
+    logger.info("🚀 Starting Teach-the-Tutor Agent...")
+    logger.info("Content directory: %s", DATA_DIR)
+
     # Check for required API keys
     required_keys = ["OPENAI_API_KEY", "DEEPGRAM_API_KEY", "CARTESIA_API_KEY"]
     missing_keys = [key for key in required_keys if not os.getenv(key)]
-    
+
     if missing_keys:
         logger.error("❌ Missing required API keys in .env.local:")
         for key in missing_keys:
             logger.error("   - %s", key)
         logger.error("Please add these keys to your .env.local file")
         sys.exit(1)
-    
+
     logger.info("✅ All required API keys found")
     logger.info("Starting LiveKit worker...")
-    
-    cli.run_app(WorkerOptions(
-        entrypoint_fnc=entrypoint,
-        prewarm_fnc=prewarm
-    ))
+
+    cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint))
