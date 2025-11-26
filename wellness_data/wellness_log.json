@@ -1,0 +1,29 @@
+{
+  "check_ins": [
+    {
+      "mood_summary": "Feeling very happy, linked to productivity.",
+      "objectives": [
+        "Complete Mars AI project and work on sales study",
+        "with tasks divided into time blocks."
+      ],
+      "agent_summary": "User is feeling very happy today, linked to their productivity. Their energy level is good. Main objectives are to complete the Mars AI project and work on their sales study. They plan to break their time into blocks for each task.",
+      "timestamp": "2025-11-24T04:00:59.132374"
+    },
+    {
+      "mood_summary": "Great mood and good energy.",
+      "objectives": [
+        "Practice DSA and take some rest."
+      ],
+      "agent_summary": "User is feeling great with good energy. Goals for today are to practice DSA and take some rest.",
+      "timestamp": "2025-11-24T08:43:59.010297"
+    },
+    {
+      "mood_summary": "Good mood and good energy.",
+      "objectives": [
+        "Practice TSA and work on a project for the Mars AI team."
+      ],
+      "agent_summary": "Feeling good, with good energy. Goals are to practice TSA and work on a project for the Mars AI team.",
+      "timestamp": "2025-11-24T08:48:03.006031"
+    }
+  ]
+}

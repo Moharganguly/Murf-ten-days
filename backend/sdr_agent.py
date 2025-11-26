@@ -2,7 +2,7 @@
 """
 Day 5: SDR (Sales Development Representative) + Lead Capture
 Voice agent that answers FAQs and captures lead information
-UPDATED: Uses Murf AI (Falcon) for TTS + Gemini Pro + ENV-BASED LIVEKIT CONFIG
+UPDATED: Uses Murf AI (Falcon) for TTS + Gemini 2.0 + ENV-BASED LIVEKIT CONFIG
 """
 
 import logging
@@ -22,21 +22,17 @@ logging.basicConfig(level=logging.INFO)
 # ---------------------------
 # Load environment variables
 # ---------------------------
-# We expect LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET,
-# plus Deepgram / Google / Murf keys to be in backend/.env or backend/.env.local
-
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 ENV_LOCAL = os.path.join(ROOT, ".env.local")
 ENV_DEFAULT = os.path.join(ROOT, ".env")
 
 if os.path.exists(ENV_LOCAL):
-    load_dotenv(dotenv_path=ENV_LOCAL)
+    load_dotenv(dotenv_path=ENV_LOCAL, override=True)
     logger.info(f"🧩 Loaded env from {ENV_LOCAL}")
 elif os.path.exists(ENV_DEFAULT):
-    load_dotenv(dotenv_path=ENV_DEFAULT)
+    load_dotenv(dotenv_path=ENV_DEFAULT, override=True)
     logger.info(f"🧩 Loaded env from {ENV_DEFAULT}")
 else:
-    # Fallback: try current working directory
     load_dotenv()
     logger.warning("⚠️ .env / .env.local not found in backend root, loaded default env")
 
@@ -44,9 +40,18 @@ LIVEKIT_URL = os.getenv("LIVEKIT_URL")
 LIVEKIT_API_KEY = os.getenv("LIVEKIT_API_KEY")
 LIVEKIT_API_SECRET = os.getenv("LIVEKIT_API_SECRET")
 
+# 👇 agent name from env, with a good default
+LIVEKIT_AGENT_NAME = os.getenv("LIVEKIT_AGENT_NAME", "sdr-agent")
+
 logger.info(f"🔧 LIVEKIT_URL: {LIVEKIT_URL}")
 logger.info(f"🔧 LIVEKIT_API_KEY: {LIVEKIT_API_KEY}")
+logger.info(f"🔧 LIVEKIT_AGENT_NAME: {LIVEKIT_AGENT_NAME}")
 # Do NOT log secret
+
+# Simple sanity check so failure is obvious
+if not LIVEKIT_URL or not LIVEKIT_API_KEY or not LIVEKIT_API_SECRET:
+    logger.error("❌ Missing one or more LiveKit env vars (LIVEKIT_URL / LIVEKIT_API_KEY / LIVEKIT_API_SECRET)")
+    sys.exit(1)
 
 # ---------------------------
 # LiveKit / plugins imports
@@ -64,7 +69,6 @@ from livekit.agents import (
 
 from livekit.plugins import google, deepgram, murf
 
-# Try to import silero for VAD (optional but recommended)
 try:
     from livekit.plugins import silero
 except ImportError:
@@ -93,14 +97,13 @@ class FAQManager:
             logger.warning(f"⚠️ FAQ file not found at {self.faq_file}")
             return {}
         try:
-            with open(self.faq_file, 'r', encoding='utf-8') as f:
+            with open(self.faq_file, "r", encoding="utf-8") as f:
                 return json.load(f)
         except Exception as e:
             logger.error(f"Failed to load FAQ: {e}")
             return {}
 
     def search(self, query: str):
-        # Simple keyword search implementation
         query_lower = query.lower().split()
         results = []
         for faq in self.data.get("faq", []):
@@ -175,29 +178,17 @@ def prewarm(proc: JobProcess):
 async def entrypoint(ctx: JobContext):
     logger.info(f"🚀 Starting SDR Agent in room: {ctx.room.name}")
     
-    # Reset lead data for new call
     global current_lead
     current_lead = {}
     
     await ctx.connect()
 
-    # --- PLUGINS SETUP ---
-    # 1. LLM: Gemini Pro (Stable version)
-    llm = google.LLM(model="gemini-pro")
-    
-    # 2. TTS: Murf Falcon (Low latency)
-    tts = murf.TTS(
-        model="falcon",
-        voice="en-US-001",
-    )
-    
-    # 3. STT: Deepgram
+    # 🔥 FIXED: Use default Gemini model (gemini-2.0-flash-exp) - compatible with LiveKit plugin
+    llm = google.LLM()  # ✅ Uses default compatible model
+    tts = murf.TTS(voice="en-US-matthew")  # ✅ Matthew voice from Murf Falcon
     stt = deepgram.STT(model="nova-2")
-    
-    # 4. VAD: Silero (if available)
     vad = ctx.proc.userdata.get("vad")
 
-    # --- INSTRUCTIONS ---
     info = faq_manager.get_company_info()
     company = info.get("name", "Razorpay")
     
@@ -213,13 +204,11 @@ async def entrypoint(ctx: JobContext):
         Be concise, professional, and helpful.
     """
 
-    # Create the Agent
     agent = Agent(
         instructions=instructions,
         tools=[save_lead_field, search_company_faq, complete_call_and_save_lead],
     )
 
-    # Start the Session
     session = AgentSession(
         vad=vad,
         stt=stt,
@@ -227,15 +216,26 @@ async def entrypoint(ctx: JobContext):
         tts=tts,
     )
 
-    session.start(agent=agent, room=ctx.room)
+    # 🔥 Added await
+    await session.start(agent=agent, room=ctx.room)
     
-    # Generate Initial Greeting
     try:
         await session.generate_reply(
             instructions=f"Say 'Hi! Welcome to {company}. How can I help you today?'"
         )
+        logger.info("✅ Greeting sent successfully")
     except Exception as e:
         logger.error(f"❌ Error generating greeting: {e}")
 
 if __name__ == "__main__":
-    cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint, prewarm_fnc=prewarm))
+    # 👇 Explicitly pass url, api_key, api_secret from environment
+    worker_opts = WorkerOptions(
+        entrypoint_fnc=entrypoint,
+        prewarm_fnc=prewarm,
+        agent_name=LIVEKIT_AGENT_NAME,
+        # 🔥 Explicitly set these to force use of env variables
+        ws_url=LIVEKIT_URL,
+        api_key=LIVEKIT_API_KEY,
+        api_secret=LIVEKIT_API_SECRET,
+    )
+    cli.run_app(worker_opts)

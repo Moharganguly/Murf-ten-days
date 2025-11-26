@@ -1,91 +1,102 @@
-import { NextResponse } from 'next/server';
-import { AccessToken, type AccessTokenOptions, type VideoGrant } from 'livekit-server-sdk';
-import { RoomConfiguration } from '@livekit/protocol';
+// app/api/connection-details/route.ts
+import { NextResponse } from "next/server";
+import { AccessToken, VideoGrant } from "livekit-server-sdk";
+import { RoomConfiguration, RoomAgentDispatch } from "@livekit/protocol";
 
-type ConnectionDetails = {
-  serverUrl: string;
-  roomName: string;
-  participantName: string;
-  participantToken: string;
-};
+export async function POST(request: Request) {
+  // 🔥 Trim whitespace and validate URL format
+  const livekitUrl = process.env.LIVEKIT_URL?.trim();
+  const apiKey = process.env.LIVEKIT_API_KEY?.trim();
+  const apiSecret = process.env.LIVEKIT_API_SECRET?.trim();
+  const defaultAgentName = process.env.LIVEKIT_AGENT_NAME?.trim() || "sdr-agent";
 
-// NOTE: you are expected to define the following environment variables in `.env.local`:
-const API_KEY = process.env.LIVEKIT_API_KEY;
-const API_SECRET = process.env.LIVEKIT_API_SECRET;
-const LIVEKIT_URL = process.env.LIVEKIT_URL;
-
-// don't cache the results
-export const revalidate = 0;
-
-export async function POST(req: Request) {
-  try {
-    if (LIVEKIT_URL === undefined) {
-      throw new Error('LIVEKIT_URL is not defined');
-    }
-    if (API_KEY === undefined) {
-      throw new Error('LIVEKIT_API_KEY is not defined');
-    }
-    if (API_SECRET === undefined) {
-      throw new Error('LIVEKIT_API_SECRET is not defined');
-    }
-
-    // Parse agent configuration from request body
-    const body = await req.json();
-    const agentName: string = body?.room_config?.agents?.[0]?.agent_name;
-
-    // Generate participant token
-    const participantName = 'user';
-    const participantIdentity = `voice_assistant_user_${Math.floor(Math.random() * 10_000)}`;
-    const roomName = `voice_assistant_room_${Math.floor(Math.random() * 10_000)}`;
-
-    const participantToken = await createParticipantToken(
-      { identity: participantIdentity, name: participantName },
-      roomName,
-      agentName
-    );
-
-    // Return connection details
-    const data: ConnectionDetails = {
-      serverUrl: LIVEKIT_URL,
-      roomName,
-      participantToken: participantToken,
-      participantName,
-    };
-    const headers = new Headers({
-      'Cache-Control': 'no-store',
+  // 🔥 Enhanced validation
+  if (!livekitUrl || !apiKey || !apiSecret) {
+    console.error("❌ Missing LiveKit env vars", {
+      livekitUrl: livekitUrl || "MISSING",
+      apiKey: !!apiKey,
+      apiSecret: !!apiSecret,
     });
-    return NextResponse.json(data, { headers });
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error(error);
-      return new NextResponse(error.message, { status: 500 });
+    return NextResponse.json(
+      { error: "Server not configured correctly" },
+      { status: 500 }
+    );
+  }
+
+  // 🔥 Validate URL format
+  if (!livekitUrl.startsWith("ws://") && !livekitUrl.startsWith("wss://")) {
+    console.error("❌ Invalid LIVEKIT_URL format:", livekitUrl);
+    return NextResponse.json(
+      { error: "Invalid LiveKit URL format. Must start with ws:// or wss://" },
+      { status: 500 }
+    );
+  }
+
+  // 👇 Safely read request body
+  let agentName = defaultAgentName;
+  try {
+    const body = await request.json();
+    if (body?.room_config?.agents?.[0]?.agent_name) {
+      agentName = body.room_config.agents[0].agent_name;
     }
+  } catch (e) {
+    // No body or invalid JSON - use default agent name
+    console.log("⚠️ No request body, using default agent name:", defaultAgentName);
+  }
+
+  try {
+    // Random room + identity
+    const roomName = `sdr-room-${Math.random().toString(36).slice(2, 8)}`;
+    const identity = `user-${Math.random().toString(36).slice(2, 8)}`;
+
+    console.log(`🚀 Creating room: ${roomName} for user: ${identity}`);
+    console.log(`🤖 Dispatching agent: ${agentName}`);
+
+    // Create access token for this user
+    const at = new AccessToken(apiKey, apiSecret, { identity });
+
+    const videoGrant: VideoGrant = {
+      roomJoin: true,
+      room: roomName,
+    };
+    at.addGrant(videoGrant);
+
+    // Tell LiveKit to dispatch our Python agent into this room
+    const roomConfig = new RoomConfiguration({
+      agents: [
+        new RoomAgentDispatch({
+          agentName, // must match your Python worker's agent_name
+        }),
+      ],
+      departureTimeout: 180,
+      emptyTimeout: 5,
+    });
+
+    at.roomConfig = roomConfig;
+
+    const token = await at.toJwt();
+
+    console.log(`✅ Token created for room: ${roomName} with agent: ${agentName}`);
+
+    // 🔥 Return correct field names
+    return NextResponse.json({
+      serverUrl: livekitUrl,
+      participantToken: token,
+      roomName,
+    });
+  } catch (err) {
+    console.error("❌ Error creating LiveKit token / roomConfig:", err);
+    return NextResponse.json(
+      { error: "Failed to create connection details" },
+      { status: 500 }
+    );
   }
 }
 
-function createParticipantToken(
-  userInfo: AccessTokenOptions,
-  roomName: string,
-  agentName?: string
-): Promise<string> {
-  const at = new AccessToken(API_KEY, API_SECRET, {
-    ...userInfo,
-    ttl: '15m',
-  });
-  const grant: VideoGrant = {
-    room: roomName,
-    roomJoin: true,
-    canPublish: true,
-    canPublishData: true,
-    canSubscribe: true,
-  };
-  at.addGrant(grant);
-
-  if (agentName) {
-    at.roomConfig = new RoomConfiguration({
-      agents: [{ agentName }],
-    });
-  }
-
-  return at.toJwt();
+// Optional: reject GET cleanly
+export async function GET() {
+  return NextResponse.json(
+    { error: "Use POST for connection details" },
+    { status: 405 }
+  );
 }

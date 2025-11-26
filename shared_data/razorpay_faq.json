@@ -1,0 +1,159 @@
+{
+  "company": {
+    "name": "Razorpay",
+    "tagline": "India's Leading Payment Gateway",
+    "description": "Razorpay is a full-stack financial solutions provider that enables businesses to accept, process, and disburse payments with its product suite. We help over 10 million businesses with payments, banking, and financial services.",
+    "founded": "2014",
+    "headquarters": "Bangalore, India",
+    "website": "https://razorpay.com"
+  },
+  "products": [
+    {
+      "name": "Payment Gateway",
+      "description": "Accept payments online with 100+ payment methods including UPI, credit/debit cards, net banking, and wallets. Fastest integration with developer-friendly APIs.",
+      "use_cases": ["E-commerce", "SaaS", "Marketplaces", "EdTech", "HealthTech"]
+    },
+    {
+      "name": "Payment Links",
+      "description": "Create and share payment links instantly without any coding. Perfect for small businesses, freelancers, and quick transactions.",
+      "use_cases": ["Invoicing", "Social commerce", "Freelancers", "Service providers"]
+    },
+    {
+      "name": "Payment Pages",
+      "description": "No-code solution to create customized payment pages for your products or services in minutes.",
+      "use_cases": ["Quick store setup", "Donations", "Event ticketing"]
+    },
+    {
+      "name": "Subscriptions",
+      "description": "Automate recurring payments with smart retry logic and customer management. Perfect for subscription-based businesses.",
+      "use_cases": ["SaaS", "Memberships", "OTT platforms", "Fitness apps"]
+    },
+    {
+      "name": "Route",
+      "description": "Split payments and manage marketplace transactions with automatic vendor payouts and commission management.",
+      "use_cases": ["Marketplaces", "Multi-vendor platforms", "Aggregators"]
+    },
+    {
+      "name": "RazorpayX",
+      "description": "Business banking platform with current accounts, payroll, vendor payments, and expense management.",
+      "use_cases": ["Business banking", "Payroll", "Vendor payments", "Tax payments"]
+    }
+  ],
+  "pricing": [
+    {
+      "plan": "Standard",
+      "cost": "2% per transaction",
+      "description": "No setup fees, no annual fees. Pay only for successful transactions.",
+      "features": [
+        "All payment methods",
+        "Instant settlements",
+        "24/7 support",
+        "Dashboard & APIs"
+      ]
+    },
+    {
+      "plan": "Custom",
+      "cost": "Contact sales for volume discounts",
+      "description": "For businesses processing high volumes with custom requirements.",
+      "features": [
+        "Dedicated account manager",
+        "Custom pricing",
+        "Priority support",
+        "Advanced features"
+      ]
+    }
+  ],
+  "faq": [
+    {
+      "question": "What does Razorpay do?",
+      "answer": "Razorpay is India's leading payment gateway that helps businesses accept online payments. We support 100+ payment methods including UPI, cards, net banking, and wallets. Beyond payments, we also offer business banking, subscriptions, and marketplace solutions."
+    },
+    {
+      "question": "Who is Razorpay for?",
+      "answer": "Razorpay is for any business that needs to accept payments online - from startups and small businesses to large enterprises. Our customers include e-commerce stores, SaaS companies, EdTech platforms, freelancers, marketplaces, and more. We serve over 10 million businesses across India."
+    },
+    {
+      "question": "Do you have a free tier?",
+      "answer": "We don't have a traditional free tier, but there are no setup fees or annual charges. You only pay 2% per successful transaction. There's no minimum commitment, so you can start for free and only pay when you start receiving payments."
+    },
+    {
+      "question": "What are your transaction fees?",
+      "answer": "Our standard pricing is 2% per successful transaction with no setup fees or annual charges. For high-volume businesses, we offer custom pricing with volume discounts. International payments have different rates."
+    },
+    {
+      "question": "How long does integration take?",
+      "answer": "Integration is very quick! Payment Links and Payment Pages require zero coding and can be set up in minutes. For API integration, most developers complete it in 2-3 hours. We have comprehensive documentation, SDKs in multiple languages, and plugins for popular platforms like WooCommerce, Shopify, and Magento."
+    },
+    {
+      "question": "What payment methods do you support?",
+      "answer": "We support 100+ payment methods including UPI (Google Pay, PhonePe, Paytm), all major credit and debit cards (Visa, Mastercard, Amex, RuPay), net banking from 50+ banks, digital wallets (Paytm, PhonePe, Amazon Pay), and EMI options."
+    },
+    {
+      "question": "How fast are settlements?",
+      "answer": "We offer instant settlements where you can receive your money within seconds of a successful payment. Standard settlements take T+1 to T+3 days depending on your business type. You can choose the settlement cycle that works best for you."
+    },
+    {
+      "question": "Is Razorpay secure and compliant?",
+      "answer": "Yes, absolutely! We are PCI DSS Level 1 certified, which is the highest level of payment security compliance. All transactions are encrypted with 128-bit SSL. We're also compliant with RBI regulations and undergo regular security audits."
+    },
+    {
+      "question": "Do you offer support?",
+      "answer": "Yes! We provide 24/7 customer support via email, phone, and chat. You'll also get access to our comprehensive documentation, video tutorials, and developer community. Enterprise customers get dedicated account managers."
+    },
+    {
+      "question": "Can I try before committing?",
+      "answer": "Absolutely! You can create a free test account and use our test mode to integrate and test everything without any commitment. Test mode gives you full access to all features. You only start paying when you go live and process real transactions."
+    },
+    {
+      "question": "What is the minimum team size needed?",
+      "answer": "There's no minimum team size requirement. We serve everyone from solo freelancers to large enterprises. Even a single person can use our no-code solutions like Payment Links, while larger teams can use our full API suite."
+    },
+    {
+      "question": "Do you support international payments?",
+      "answer": "Yes, we support international card payments from customers worldwide. International transaction fees are slightly higher than domestic payments. We also support multi-currency settlements in select cases."
+    },
+    {
+      "question": "What about refunds and chargebacks?",
+      "answer": "Refunds can be processed instantly through our dashboard or API. We handle the entire refund process and return the money to customers within 5-7 business days. For chargebacks, we provide tools and support to help you manage disputes effectively."
+    },
+    {
+      "question": "Can I use Razorpay for subscriptions?",
+      "answer": "Yes! Our Subscriptions product is specifically built for recurring payments. It includes features like automatic retries for failed payments, customer management, prorated billing, and detailed analytics. Perfect for SaaS, memberships, and any subscription-based business."
+    },
+    {
+      "question": "What about invoicing?",
+      "answer": "Yes, we offer invoicing capabilities. You can create and send professional invoices directly from the Razorpay dashboard. Invoices can include payment links, and customers can pay using any payment method. You can also automate recurring invoices for subscription businesses."
+    }
+  ],
+  "target_customers": {
+    "industries": [
+      "E-commerce and Retail",
+      "SaaS and Software",
+      "EdTech and Online Education",
+      "HealthTech and Telemedicine",
+      "Food Delivery and Restaurants",
+      "Travel and Hospitality",
+      "Marketplaces and Aggregators",
+      "Gaming and Entertainment",
+      "Freelancers and Service Providers",
+      "Non-profits and NGOs"
+    ],
+    "business_sizes": [
+      "Freelancers and Solopreneurs",
+      "Startups (1-50 employees)",
+      "SMBs (50-500 employees)",
+      "Mid-market (500-5000 employees)",
+      "Enterprises (5000+ employees)"
+    ]
+  },
+  "value_propositions": [
+    "Accept 100+ payment methods with a single integration",
+    "2% flat transaction fee with no setup or annual costs",
+    "Instant settlements - get paid in seconds",
+    "Developer-friendly APIs and quick integration",
+    "PCI DSS Level 1 certified security",
+    "24/7 customer support",
+    "Serve 10M+ businesses across India",
+    "All-in-one solution: payments, banking, subscriptions"
+  ]
+}

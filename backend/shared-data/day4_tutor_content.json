@@ -1,0 +1,20 @@
+[
+  {
+    "id": "variables",
+    "title": "Variables",
+    "summary": "Variables are containers that store values in programming. They allow you to save data like numbers, text, or complex objects, and reuse them throughout your code. Think of a variable as a labeled box where you can put information and retrieve it later by using its name.",
+    "sample_question": "What is a variable and why is it useful in programming?"
+  },
+  {
+    "id": "loops",
+    "title": "Loops",
+    "summary": "Loops are programming constructs that let you repeat actions multiple times without writing the same code over and over. A for loop is used when you know how many times you want to repeat something, like counting from 1 to 10. A while loop continues repeating as long as a certain condition remains true, useful when you don't know exactly how many iterations you need.",
+    "sample_question": "Explain the difference between a for loop and a while loop."
+  },
+  {
+    "id": "functions",
+    "title": "Functions",
+    "summary": "Functions are reusable blocks of code that perform specific tasks. They help organize your code, make it more readable, and avoid repetition. Functions can accept inputs called parameters and return outputs. This makes your code modular and easier to maintain.",
+    "sample_question": "What is a function and what are its main benefits?"
+  }
+]
