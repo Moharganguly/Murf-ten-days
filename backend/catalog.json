@@ -1,0 +1,202 @@
+{
+  "store_name": "QuickMart Express",
+  "categories": {
+    "groceries": [
+      {
+        "id": "g001",
+        "name": "Whole Wheat Bread",
+        "category": "groceries",
+        "price": 45.00,
+        "unit": "loaf",
+        "brand": "Modern",
+        "tags": ["vegetarian", "breakfast"]
+      },
+      {
+        "id": "g002",
+        "name": "White Bread",
+        "category": "groceries",
+        "price": 40.00,
+        "unit": "loaf",
+        "brand": "Britannia",
+        "tags": ["vegetarian", "breakfast"]
+      },
+      {
+        "id": "g003",
+        "name": "Milk",
+        "category": "groceries",
+        "price": 60.00,
+        "unit": "1L",
+        "brand": "Amul",
+        "tags": ["dairy", "vegetarian"]
+      },
+      {
+        "id": "g004",
+        "name": "Eggs",
+        "category": "groceries",
+        "price": 80.00,
+        "unit": "dozen",
+        "brand": "Farm Fresh",
+        "tags": ["protein"]
+      },
+      {
+        "id": "g005",
+        "name": "Butter",
+        "category": "groceries",
+        "price": 55.00,
+        "unit": "100g",
+        "brand": "Amul",
+        "tags": ["dairy", "vegetarian"]
+      },
+      {
+        "id": "g006",
+        "name": "Peanut Butter",
+        "category": "groceries",
+        "price": 250.00,
+        "unit": "500g",
+        "brand": "MyFitness",
+        "tags": ["protein", "vegetarian", "vegan"]
+      },
+      {
+        "id": "g007",
+        "name": "Pasta",
+        "category": "groceries",
+        "price": 85.00,
+        "unit": "500g",
+        "brand": "Maggi",
+        "tags": ["vegetarian", "vegan"]
+      },
+      {
+        "id": "g008",
+        "name": "Pasta Sauce",
+        "category": "groceries",
+        "price": 120.00,
+        "unit": "jar",
+        "brand": "Kissan",
+        "tags": ["vegetarian"]
+      },
+      {
+        "id": "g009",
+        "name": "Rice",
+        "category": "groceries",
+        "price": 180.00,
+        "unit": "1kg",
+        "brand": "India Gate",
+        "tags": ["vegetarian", "vegan", "gluten-free"]
+      },
+      {
+        "id": "g010",
+        "name": "Cooking Oil",
+        "category": "groceries",
+        "price": 150.00,
+        "unit": "1L",
+        "brand": "Fortune",
+        "tags": ["vegetarian", "vegan"]
+      }
+    ],
+    "snacks": [
+      {
+        "id": "s001",
+        "name": "Potato Chips",
+        "category": "snacks",
+        "price": 20.00,
+        "unit": "pack",
+        "brand": "Lays",
+        "tags": ["vegetarian"]
+      },
+      {
+        "id": "s002",
+        "name": "Chocolate Bar",
+        "category": "snacks",
+        "price": 30.00,
+        "unit": "bar",
+        "brand": "Dairy Milk",
+        "tags": ["vegetarian"]
+      },
+      {
+        "id": "s003",
+        "name": "Cookies",
+        "category": "snacks",
+        "price": 40.00,
+        "unit": "pack",
+        "brand": "Parle-G",
+        "tags": ["vegetarian"]
+      },
+      {
+        "id": "s004",
+        "name": "Namkeen Mix",
+        "category": "snacks",
+        "price": 50.00,
+        "unit": "200g",
+        "brand": "Haldiram's",
+        "tags": ["vegetarian", "spicy"]
+      }
+    ],
+    "prepared_food": [
+      {
+        "id": "p001",
+        "name": "Margherita Pizza",
+        "category": "prepared_food",
+        "price": 250.00,
+        "unit": "regular",
+        "brand": "QuickMart Kitchen",
+        "tags": ["vegetarian"]
+      },
+      {
+        "id": "p002",
+        "name": "Veggie Sandwich",
+        "category": "prepared_food",
+        "price": 80.00,
+        "unit": "piece",
+        "brand": "QuickMart Kitchen",
+        "tags": ["vegetarian"]
+      },
+      {
+        "id": "p003",
+        "name": "Chicken Sandwich",
+        "category": "prepared_food",
+        "price": 120.00,
+        "unit": "piece",
+        "brand": "QuickMart Kitchen",
+        "tags": ["non-vegetarian"]
+      },
+      {
+        "id": "p004",
+        "name": "Paneer Wrap",
+        "category": "prepared_food",
+        "price": 100.00,
+        "unit": "piece",
+        "brand": "QuickMart Kitchen",
+        "tags": ["vegetarian"]
+      }
+    ],
+    "beverages": [
+      {
+        "id": "b001",
+        "name": "Orange Juice",
+        "category": "beverages",
+        "price": 80.00,
+        "unit": "1L",
+        "brand": "Tropicana",
+        "tags": ["vegetarian", "vegan"]
+      },
+      {
+        "id": "b002",
+        "name": "Cola",
+        "category": "beverages",
+        "price": 40.00,
+        "unit": "500ml",
+        "brand": "Coca-Cola",
+        "tags": ["vegetarian", "vegan"]
+      },
+      {
+        "id": "b003",
+        "name": "Coffee",
+        "category": "beverages",
+        "price": 350.00,
+        "unit": "200g",
+        "brand": "Nescafe",
+        "tags": ["vegetarian", "vegan"]
+      }
+    ]
+  }
+}

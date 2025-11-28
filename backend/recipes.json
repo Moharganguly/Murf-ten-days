@@ -1,0 +1,34 @@
+{
+  "recipes": {
+    "peanut butter sandwich": {
+      "items": ["g002", "g006"],
+      "description": "bread and peanut butter"
+    },
+    "sandwich": {
+      "items": ["g002", "g006"],
+      "description": "bread and peanut butter"
+    },
+    "pasta": {
+      "items": ["g007", "g008"],
+      "description": "pasta and pasta sauce"
+    },
+    "pasta for two": {
+      "items": ["g007", "g008"],
+      "quantities": [1, 1],
+      "description": "pasta and pasta sauce"
+    },
+    "breakfast": {
+      "items": ["g002", "g004", "g003", "g005"],
+      "description": "bread, eggs, milk, and butter"
+    },
+    "coffee": {
+      "items": ["g003", "b003"],
+      "description": "milk and coffee"
+    },
+    "pizza night": {
+      "items": ["p001", "b002"],
+      "quantities": [2, 2],
+      "description": "pizzas and cola"
+    }
+  }
+}
