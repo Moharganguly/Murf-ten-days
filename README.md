@@ -341,9 +341,7 @@ The AI host is designed to be:
 - Voice by [Murf AI Falcon](https://murf.ai) (Alicia)
 - Challenge details: [Murf AI GitHub](https://github.com/murf-ai/ten-days-of-voice-agents-2025)
 
-## 📧 Contact
 
-Built by Mohar Ganguly | [GitHub](https://github.com/yourusername) | [LinkedIn](https://linkedin.com/in/yourprofile)
 
 ---
 
