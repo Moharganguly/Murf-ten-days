@@ -1,0 +1,94 @@
+{
+  "scenarios": [
+    {
+      "id": 1,
+      "scenario": "You are a barista who has to tell a customer that their latte is actually a portal to another dimension.",
+      "difficulty": "medium",
+      "tags": ["absurd", "customer-service"]
+    },
+    {
+      "id": 2,
+      "scenario": "You are a time-travelling tour guide explaining modern smartphones to someone from the 1800s.",
+      "difficulty": "easy",
+      "tags": ["time-travel", "explanatory"]
+    },
+    {
+      "id": 3,
+      "scenario": "You are a restaurant waiter who must calmly tell a customer that their order has escaped the kitchen.",
+      "difficulty": "medium",
+      "tags": ["absurd", "customer-service"]
+    },
+    {
+      "id": 4,
+      "scenario": "You are a customer trying to return an obviously cursed object to a very skeptical shop owner.",
+      "difficulty": "medium",
+      "tags": ["supernatural", "persuasion"]
+    },
+    {
+      "id": 5,
+      "scenario": "You are a tech support agent helping a vampire set up video calls during daytime.",
+      "difficulty": "hard",
+      "tags": ["supernatural", "tech", "problem-solving"]
+    },
+    {
+      "id": 6,
+      "scenario": "You are a yoga instructor teaching a class to robots who keep malfunctioning in the middle of poses.",
+      "difficulty": "hard",
+      "tags": ["absurd", "teaching"]
+    },
+    {
+      "id": 7,
+      "scenario": "You are a detective interrogating a talking parrot who is the only witness to a cookie theft.",
+      "difficulty": "medium",
+      "tags": ["detective", "absurd"]
+    },
+    {
+      "id": 8,
+      "scenario": "You are a real estate agent trying to sell a house that's clearly haunted to a ghost skeptic.",
+      "difficulty": "medium",
+      "tags": ["supernatural", "sales"]
+    },
+    {
+      "id": 9,
+      "scenario": "You are a therapist counseling a superhero who's burned out from saving the world.",
+      "difficulty": "hard",
+      "tags": ["therapy", "superhero", "emotional"]
+    },
+    {
+      "id": 10,
+      "scenario": "You are a museum guide explaining why the dinosaur exhibit keeps coming to life at night.",
+      "difficulty": "medium",
+      "tags": ["explanatory", "supernatural"]
+    },
+    {
+      "id": 11,
+      "scenario": "You are a chef on a cooking show where all your ingredients have gained consciousness.",
+      "difficulty": "hard",
+      "tags": ["absurd", "cooking"]
+    },
+    {
+      "id": 12,
+      "scenario": "You are a flight attendant announcing that the plane has accidentally flown into a fantasy realm.",
+      "difficulty": "medium",
+      "tags": ["travel", "fantasy"]
+    },
+    {
+      "id": 13,
+      "scenario": "You are a librarian shushing increasingly loud mythical creatures in the reading room.",
+      "difficulty": "medium",
+      "tags": ["absurd", "authority"]
+    },
+    {
+      "id": 14,
+      "scenario": "You are a weather forecaster predicting ridiculous weather phenomena like raining cats and dogs (literally).",
+      "difficulty": "easy",
+      "tags": ["absurd", "presentation"]
+    },
+    {
+      "id": 15,
+      "scenario": "You are a driving instructor teaching a dragon how to parallel park.",
+      "difficulty": "hard",
+      "tags": ["teaching", "fantasy", "absurd"]
+    }
+  ]
+}
